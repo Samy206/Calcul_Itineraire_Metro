@@ -56,9 +56,9 @@ public class Graphe {
 
     }
 
-    public void ItineraireFromProgram(Station depart, Station arrivee) {
-                                                                        //Recherche d'itinéraire sans rien donner en
-                                                                        // paramètre à l'éxecution ( Djikstra )
+    public void ItineraireFromProgram(Station depart, Station arrivee , int Affichage) {
+        //Recherche d'itinéraire sans rien donner en
+        // paramètre à l'éxecution ( Djikstra )
 
         int numDep = depart.Num ;                                       //Source : numéro de début du trajet
         double[] distance = new double[Sommets.size()];                 //Tableau des distances des autres stations à la source
@@ -69,14 +69,14 @@ public class Graphe {
         String stat1 = depart.Nom ;               // enregistrement du nom de la station de départ qui servira plus tard
 
         double previousValDep;                                          //variable nous permettant de comparer les valeurs
-                                                                        // (dep = depart => le sommet sur lequel on est
-                                                                        //est l'origine du lien
+        // (dep = depart => le sommet sur lequel on est
+        //est l'origine du lien
 
         String direction ;                                              //Affichage de la direction à la fin
 
         double previousValArr;                                          //variable nous permettant de comparer les valeurs
-                                                                        // (arr = arrivee => le sommet sur lequel on est
-                                                                         //est la destination du lien
+        // (arr = arrivee => le sommet sur lequel on est
+        //est la destination du lien
 
         Station Iti ;                                                     //Station qui va nous permettre d'afficher l'itinéraire
         double min = 3000000;                                             //Grande valeur nous permettant de vérifier le minimum
@@ -99,7 +99,7 @@ public class Graphe {
                 if (!traite.contains(depart)) {  // si nous n'avons pas traité le sommet sur lequel on est
                     if ((l.Depart).equals(depart) || (l.Arrivee).equals(depart) )  { //s'il y a un lien dans un sens ou l'autre
                         previousValDep = (distance[l.Depart.Num]);              //si c'est une autre station qui est lié à la station
-                                                                                // où on est
+                        // où on est
                         previousValArr = (distance[l.Arrivee.Num]);             //si c'est la station actuelle qui est lié à une autre
                         if(previousValArr < previousValDep)
                         {
@@ -109,7 +109,7 @@ public class Graphe {
                                 pere[l.Depart.Num] = l.Arrivee ;
                             }
                         }                                                       //On initie la distance du sommet le plus court
-                                                                                // et leur pere va être l'origine du lien
+                        // et leur pere va être l'origine du lien
                         else
                         {
                             if( (previousValDep+l.Temps) < distance[l.Arrivee.Num])
@@ -123,14 +123,14 @@ public class Graphe {
                 }
             }
             traite.add(depart);                             //on ajoute le sommet traité à la liste des sommets pour ne pas les retraiter
-                for (int j = 0; j < Sommets.size(); j++) {
+            for (int j = 0; j < Sommets.size(); j++) {
 
-                    if (min > distance[j] && distance[j] != 0 && j != depart.Num && (!traite.contains(Sommets.get(j)))) {
-                        indice_min = j;
-                        min = distance[j];
-                        depart = Sommets.get(j);            //on recherche le sommet le plus proche de la source
-                    }
+                if (min > distance[j] && distance[j] != 0 && j != depart.Num && (!traite.contains(Sommets.get(j)))) {
+                    indice_min = j;
+                    min = distance[j];
+                    depart = Sommets.get(j);            //on recherche le sommet le plus proche de la source
                 }
+            }
 
 
         }
@@ -138,43 +138,39 @@ public class Graphe {
         int minutes = (int) (distance[arrivee.Num] / 60) ;  //nombre de minutes de la source à la station d'arrivée
         int secondes = (int) (distance[arrivee.Num] % 60) ; //nombre de secondes de la source à la station d'arrivée
 
-        System.out.println("Arrivée à " + arrivee.Nom + " à partir de " + Sommets.get(numDep).Nom + //Affichage de la durée
-                " en " + minutes + " minutes et " + secondes + " secondes");
         Iti = arrivee;
         direction = getDirection(Iti,Iti.Line);  // direction qui évoluera au fil du trajet
-        while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ on met les stations dans la liste
+        while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
         {
             trajet.add(Iti);
-            Iti = pere[Iti.Num];            // et on retourne en arrière
+            Iti = pere[Iti.Num];
         }
 
-        System.out.println("Démarrez de " + Iti.Nom + " en prenant la ligne " + Iti.Line.Nom + " en direction de "+direction);
-
-        nomLignePrev = Iti.Line.Nom ;     //enregistrement de la ligne actuelle
-
+        direction = getDirection(Iti,Iti.Line);   //obtention de la direction de la première ligne empruntée
+        System.out.println("Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction); //affichage du
+        //debut du trajet
+        nomLignePrev = Iti.Line.Nom ; //enregistrement de la ligne en cas de changement
         for(int i = trajet.size()-1 ; i >= 0 ; i--)
         {
             if(i == 0 )
-                System.out.println("Vous êtes donc arrivé à la station " + trajet.get(i).Nom);  //on affiche la station d'arrivée
+                System.out.println("Vous arriverez à la station " + trajet.get(i).Nom );
 
-            if(Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 0 && i != 0)  // Si la station d'arrivée n'est pas encore arrivée
-                                                                                                      //et qu'on reste sur la même ligne
-            {
-                System.out.println("Puis vous arriverez à "+ trajet.get(i).Nom + " sur la même ligne" );
-            }
-            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0) //Si on change de ligne d'une station à une autre on affiche
-                                                                                                        // la nouvelle ligne et sa direction
+            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0 && Affichage ==1)
+                System.out.println("Vous passerez par la station "+ trajet.get(i).Nom + " sur la ligne " +nomLignePrev );
+
+            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
             {
                 nomLignePrev = trajet.get(i).Line.Nom ;
                 direction =  getDirection(trajet.get(i),trajet.get(i).Line);
-                System.out.println("A partir de  "+ trajet.get(i).Nom + " et vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
+                System.out.println("A partir de  "+ trajet.get(i).Nom + " vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
             }
 
         }
+        System.out.println("Ce trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes");
 
     }
 
-    public void ItineraireFromExec(String stat1, String stat2) {
+    public void ItineraireFromExec(String stat1, String stat2,int Affichage) {
         //Même commentaire que l'algo précent à l'exception que celui ci
         // prend deux noms de stations que l'on donne à l'execution
 
@@ -243,8 +239,6 @@ public class Graphe {
         int minutes = (int) (distance[arrivee.Num] / 60) ;  //nombre de minutes de la source à la station d'arrivée
         int secondes = (int) (distance[arrivee.Num] % 60) ; //nombre de secondes de la source à la station d'arrivée
 
-        System.out.println("Arrivée à " + arrivee.Nom + " à partir de " + Sommets.get(numDep).Nom + //Affichage de la durée
-                " en " + minutes + " minutes et " + secondes + " secondes");
         Iti = arrivee;
         direction = getDirection(Iti,Iti.Line);  // direction qui évoluera au fil du trajet
         while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
@@ -254,25 +248,25 @@ public class Graphe {
         }
 
         direction = getDirection(Iti,Iti.Line);
-        System.out.println("Démarrez de " + Iti.Nom + " en prenant la ligne " + Iti.Line.Nom + " en direction de "+direction);
+        System.out.println("Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction);
         nomLignePrev = Iti.Line.Nom ;
         for(int i = trajet.size()-1 ; i >= 0 ; i--)
         {
             if(i == 0 )
-                System.out.println("Vous êtes donc arrivé à la station " + trajet.get(i).Nom);
+                System.out.println("Vous arriverez à la station " + trajet.get(i).Nom );
 
-            if(Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 0 && i != 0)
-            {
-                System.out.println("Puis vous arriverez à "+ trajet.get(i).Nom + " sur la même ligne" );
-            }
+            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0 && Affichage ==1)
+                System.out.println("Vous passerez par la station "+ trajet.get(i).Nom + " sur la ligne " +nomLignePrev );
+
             else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
             {
                 nomLignePrev = trajet.get(i).Line.Nom ;
                 direction =  getDirection(trajet.get(i),trajet.get(i).Line);
-                System.out.println("A partir de  "+ trajet.get(i).Nom + " et vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
+                System.out.println("A partir de  "+ trajet.get(i).Nom + " vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
             }
 
         }
+        System.out.println("Ce trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes");
 
     }
 
