@@ -16,11 +16,11 @@ import java.lang.String;
 import static guru.nidi.graphviz.attribute.Rank.RankDir.LEFT_TO_RIGHT;
 import static guru.nidi.graphviz.model.Factory.*;
 
-public class Main
+public class Itineraire
 {
     public static void main(String[] args)
     {
-        File file = new File(Main.class.getClassLoader().getResource("metro.txt").getFile()); //le fichier est stocké dans
+        File file = new File(Itineraire.class.getClassLoader().getResource("metro.txt").getFile()); //le fichier est stocké dans
                                                                                                     // "resources"
         
         try { //si la lecture du fchier précédent se fait bien
@@ -103,9 +103,6 @@ public class Main
 
 
             G.ItineraireFromExec(stationDepart,stationArrivee); //calcul de l'itinéraire
-
-
-
 
 
         }
