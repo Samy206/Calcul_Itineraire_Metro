@@ -1,4 +1,5 @@
 package uvsq.algo;
+import javax.management.relation.RelationSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
@@ -56,7 +57,7 @@ public class Graphe {
 
     }
 
-    public void ItineraireFromProgram(Station depart, Station arrivee , int Affichage) {
+    public ResultTrajet ItineraireFromProgram(Station depart, Station arrivee ) {
         //Recherche d'itinéraire sans rien donner en
         // paramètre à l'éxecution ( Djikstra )
 
@@ -109,7 +110,7 @@ public class Graphe {
                                 pere[l.Depart.Num] = l.Arrivee ;
                             }
                         }                                                       //On initie la distance du sommet le plus court
-                        // et leur pere va être l'origine du lien
+                                                                                // et leur pere va être l'origine du lien
                         else
                         {
                             if( (previousValDep+l.Temps) < distance[l.Arrivee.Num])
@@ -135,9 +136,6 @@ public class Graphe {
 
         }
 
-        int minutes = (int) (distance[arrivee.Num] / 60) ;  //nombre de minutes de la source à la station d'arrivée
-        int secondes = (int) (distance[arrivee.Num] % 60) ; //nombre de secondes de la source à la station d'arrivée
-
         Iti = arrivee;
         direction = getDirection(Iti,Iti.Line);  // direction qui évoluera au fil du trajet
         while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
@@ -146,128 +144,65 @@ public class Graphe {
             Iti = pere[Iti.Num];
         }
 
-        direction = getDirection(Iti,Iti.Line);   //obtention de la direction de la première ligne empruntée
-        System.out.println("Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction); //affichage du
-        //debut du trajet
-        nomLignePrev = Iti.Line.Nom ; //enregistrement de la ligne en cas de changement
-        for(int i = trajet.size()-1 ; i >= 0 ; i--)
-        {
-            if(i == 0 )
-                System.out.println("Vous arriverez à la station " + trajet.get(i).Nom );
-
-            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0 && Affichage ==1)
-                System.out.println("Vous passerez par la station "+ trajet.get(i).Nom + " sur la ligne " +nomLignePrev );
-
-            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
-            {
-                nomLignePrev = trajet.get(i).Line.Nom ;
-                direction =  getDirection(trajet.get(i),trajet.get(i).Line);
-                System.out.println("A partir de  "+ trajet.get(i).Nom + " vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
-            }
-
-        }
-        System.out.println("Ce trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes");
+        trajet.add(Iti);
+        return new ResultTrajet(distance[arrivee.Num],trajet);
 
     }
 
-    public void ItineraireFromExec(String stat1, String stat2,int Affichage) {
-        //Même commentaire que l'algo précent à l'exception que celui ci
-        // prend deux noms de stations que l'on donne à l'execution
+    public ResultTrajet getItineraireGraphe(String stat1, String stat2) {
 
-        int cmp = 0;
-        String nomLignePrev ;
-        List <Station> trajet = new ArrayList<Station>();
-        Station depart, arrivee;
-        depart = getNumStation(stat1);       //et ici on récupère leur numéro de sommets
-        arrivee = getNumStation(stat2);       // ici aussi
-        int numDep = depart.Num;
-        double[] distance = new double[Sommets.size()];
-        double previousValDep;
-        String direction;
-        double previousValArr;
-        Station Iti;
-        double min = 3000000;
-        int indice_min = -1;
-        Station[] pere = new Station[Sommets.size()];
-        List<Station> traite;
-        traite = new ArrayList<Station>();
+        List <Station> depart = getNumStation(stat1);
+        List <Station> arrivee = getNumStation(stat2);
+        double min = Double.MAX_VALUE ;
+        ResultTrajet tmp ;
 
-        pere[depart.Num] = null;
-        distance[depart.Num] = 0;
-        for (int i = 0; i < Sommets.size(); i++) {
-            if (i != depart.Num)
-                distance[i] = 3000000;
-
-            pere[i] = null;
-        }
-        while (traite.size() != Sommets.size()) {
-            min = 300000;
-            for (Lien l : Links) {
-                if (!traite.contains(depart)) {
-                    if ((l.Depart).equals(depart) || (l.Arrivee).equals(depart)) {
-                        previousValDep = (distance[l.Depart.Num]);
-                        previousValArr = (distance[l.Arrivee.Num]);
-                        if (previousValArr < previousValDep) {
-                            if ((previousValArr + l.Temps) < distance[l.Depart.Num]) {
-                                distance[l.Depart.Num] = previousValArr + l.Temps;
-                                pere[l.Depart.Num] = l.Arrivee;
-                            }
-                        } else {
-                            if ((previousValDep + l.Temps) < distance[l.Arrivee.Num]) {
-                                distance[l.Arrivee.Num] = previousValDep + l.Temps;
-                                pere[l.Arrivee.Num] = l.Depart;
-                            }
-                        }
-
-                    }
-                }
-            }
-            traite.add(depart);
-            for (int j = 0; j < Sommets.size(); j++) {
-
-                if (min > distance[j] && distance[j] != 0 && j != depart.Num && (!traite.contains(Sommets.get(j)))) {
-                    indice_min = j;
-                    min = distance[j];
-                    depart = Sommets.get(j);
-                }
-            }
-
-
-        }
-
-
-        int minutes = (int) (distance[arrivee.Num] / 60) ;  //nombre de minutes de la source à la station d'arrivée
-        int secondes = (int) (distance[arrivee.Num] % 60) ; //nombre de secondes de la source à la station d'arrivée
-
-        Iti = arrivee;
-        direction = getDirection(Iti,Iti.Line);  // direction qui évoluera au fil du trajet
-        while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
+        List <Station> itineraire = new ArrayList<>();
+        for(int i = 0 ; i < depart.size() ; i++)
         {
-            trajet.add(Iti);
-            Iti = pere[Iti.Num];
+            for(int j = 0 ;  j < arrivee.size() ; j++)
+            {
+                tmp = ItineraireFromProgram(depart.get(i),arrivee.get(j));
+                if(min > tmp.duree)
+                {
+                   itineraire = tmp.itineraire;
+                   min = tmp.duree ;
+                }
+            }
         }
+        return new ResultTrajet (min,itineraire);
+    }
 
-        direction = getDirection(Iti,Iti.Line);
-        System.out.println("Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction);
-        nomLignePrev = Iti.Line.Nom ;
-        for(int i = trajet.size()-1 ; i >= 0 ; i--)
+    public String itineraireToString(ResultTrajet res)
+    {
+        String direction ;
+        String trajet ="";
+        Station Iti = res.itineraire.get(res.itineraire.size()-1);
+        String nomLignePrev ;
+        int minutes = (int) (res.duree / 60) ;  //nombre de minutes de la source à la station d'arrivée
+        int secondes = (int) (res.duree % 60) ; //nombre de secondes de la source à la station d'arrivée
+
+        direction = getDirection(Iti,Iti.Line);   //obtention de la direction de la première ligne empruntée
+        trajet += "Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction; //affichage du
+        //debut du trajet
+        nomLignePrev = Iti.Line.Nom ; //enregistrement de la ligne en cas de changement
+        for(int i = res.itineraire.size()-2 ; i >= 0 ; i--)
         {
             if(i == 0 )
-                System.out.println("Vous arriverez à la station " + trajet.get(i).Nom );
+                trajet += "\nVous arriverez à la station " + res.itineraire.get(i).Nom;
 
-            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0 && Affichage ==1)
-                System.out.println("Vous passerez par la station "+ trajet.get(i).Nom + " sur la ligne " +nomLignePrev );
+            else if (Station.stringCompareDirection(res.itineraire.get(i).Line.Nom , nomLignePrev) == 0 && i != 0 )
+                trajet += "\nVous passerez par la station "+ res.itineraire.get(i).Nom + " sur la ligne " +nomLignePrev;
 
-            else if (Station.stringCompareDirection(trajet.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
+            else if (Station.stringCompareDirection(res.itineraire.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
             {
-                nomLignePrev = trajet.get(i).Line.Nom ;
-                direction =  getDirection(trajet.get(i),trajet.get(i).Line);
-                System.out.println("A partir de  "+ trajet.get(i).Nom + " vous devrez prendre la ligne "+ trajet.get(i).Line.Nom + " en direction de " + direction );
+                nomLignePrev = res.itineraire.get(i).Line.Nom ;
+                direction =  getDirection(res.itineraire.get(i),res.itineraire.get(i).Line);
+                trajet += "\nA partir de  "+ res.itineraire.get(i).Nom + " vous devrez prendre la ligne "+ res.itineraire.get(i).Line.Nom + " en direction de " + direction;
             }
 
         }
-        System.out.println("Ce trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes");
-
+        trajet += "\nCe trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes";
+        return trajet ;
     }
 
 
@@ -343,18 +278,16 @@ public class Graphe {
         return s3.Nom ;
     }
 
-    public Station getNumStation(String Name)  //on prend un nom de station et on renvoie le sommet correspondant
+    public List<Station> getNumStation(String Name)  //on prend un nom de station et on renvoie le sommet correspondant
     {
-        Station find = null ;
+        List <Station> possibilite = new ArrayList<Station>();
         for(Station s : Sommets){
             if(Station.stringCompareStation(Name,s.Nom) == 0 )
             {
-                find = s ;          //là c'est trouvé
-                break ;
+                possibilite.add(s);
             }
         }
-
-        return find;
+        return possibilite;
     }
 
 }

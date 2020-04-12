@@ -10,11 +10,10 @@ import java.lang.String;
 
 public class Itineraire {
     public static void main(String[] args) {
-        InputStream file = Itineraire.class.getClassLoader().getResourceAsStream("metro.txt"); //le fichier est stocké dans
-        // "resources"
 
         System.out.print("Voulez-vous afficher toutes les stations ? [y/n] ");
         String aff;
+        String itineraire ;
         Scanner lec = new Scanner(System.in);
         System.out.println("");
         aff = lec.nextLine();
@@ -34,6 +33,25 @@ public class Itineraire {
         scanf = new Scanner(System.in);             //lecture de station d'arrivée
         System.out.println("");  //Les deux premiers objets Scanner nous permettent de récupérer les stations de départ et d'arrivée
         stationArrivee = scanf.nextLine();     //Lecture de station de départ
+
+        Graphe G = buildGraph() ;
+        ResultTrajet res = G.getItineraireGraphe(stationDepart,stationArrivee);
+        itineraire =  G.itineraireToString(res); //calcul de l'itinéraire
+        System.out.println(itineraire);
+    }
+
+    public static String getItineraire(String stationdepart , String stationarrivee , int affichage)
+    {
+        Graphe G = buildGraph();
+        ResultTrajet res = G.getItineraireGraphe(stationdepart,stationarrivee);
+        return G.itineraireToString(res); //calcul de l'itinéraire
+    }
+
+    public static Graphe buildGraph()
+    {
+        InputStream file = Itineraire.class.getClassLoader().getResourceAsStream("metro.txt"); //le fichier est stocké dans
+        // "resources"
+
         Scanner sc = new Scanner(file);
         Ligne L; //variable qui nous permet d'enregistrer les différentes lignes
         String[] stationsExec; //Tableau qui va récupérer les stations données à l'éxecution
@@ -94,10 +112,6 @@ public class Itineraire {
 
         }  //fin de lecture
 
-
-        G.ItineraireFromExec(stationDepart, stationArrivee, Affichage); //calcul de l'itinéraire
-
-        //G.ItineraireFromProgram(G.Sommets.get(134),G.Sommets.get(267),Affichage);
-
+        return G ;
     }
 }
