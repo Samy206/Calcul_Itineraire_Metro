@@ -1,5 +1,7 @@
 package uvsq.algo.graphique;
 
+import uvsq.algo.*;
+
 import javax.swing.*;
 
 /*

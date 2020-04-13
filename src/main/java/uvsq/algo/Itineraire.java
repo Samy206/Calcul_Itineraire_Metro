@@ -1,6 +1,9 @@
 package uvsq.algo;
 
 
+import uvsq.algo.graphique.MetroGraphe;
+
+import javax.swing.*;
 import java.io.*;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -62,8 +65,8 @@ public class Itineraire {
         Graphe G = new Graphe();    // Graphe du métro de Paris
         List<Ligne> lignes = new ArrayList<Ligne>(); //liste de ligne
         String[] array; //division de la variable curseur en plusieurs String
-        int num;
-        int num1, num2; //Ensemble des numéros qui vont nous permettre de lire les numéros de chaque liens ( num de station et temps)
+        int numSommet1;
+        int numSommet2, numTemps; //Ensemble des numéros qui vont nous permettre de lire les numéros de chaque liens ( num de station et temps)
 
         while (sc.hasNextLine())  //Lecture du fichier et création du graphe à partir de ce dernier (tant qu'il y a des choses à lire)
         {
@@ -89,14 +92,14 @@ public class Itineraire {
             } else if (curseur.charAt(0) == 'V') // V = Sommets
             {
                 array = curseur.split("  ", 4); //La séparation est un double espace
-                num = Integer.parseInt(array[1]); //Numéro de sommets
+                numSommet1 = Integer.parseInt(array[1]); //Numéro de sommets
                 Nom_ligne = array[3]; //Nom de ligne
                 Nom_station = array[2]; // nom de la station
                 for (Ligne l : lignes) {
                     if (Station.stringCompareDirection(l.Nom, Nom_ligne) == 0) // comparaison de nom de ligne
-                    {                                        //si on trouve un nom correspondant à une des lignes on
-                        // ajoute la station à celle ci et à la liste des ommets du graphe
-                        S = new Station(Nom_station, l, num);
+                    {                                                   //si on trouve un nom correspondant à une des lignes on
+                                                                    // ajoute la station à celle ci et à la liste des sommets du graphe
+                        S = new Station(Nom_station, l, numSommet1);
                         l.addStation(S);
                         G.ajoutSommet(S);
                     }
@@ -104,10 +107,10 @@ public class Itineraire {
             } else if (curseur.charAt(0) == 'E') //E = liaison
             {
                 array = curseur.split("  ", 4);      //Séparation = double espace
-                num = Integer.parseInt(array[1]);        //Num sommet 1
-                num1 = Integer.parseInt(array[2]);       //Num sommet 2
-                num2 = Integer.parseInt(array[3]);       //temps en secondes
-                G.createLink(num, num1, num2);  //création du lien
+                numSommet1 = Integer.parseInt(array[1]);        //Num sommet 1
+                numSommet2 = Integer.parseInt(array[2]);       //Num sommet 2
+                numTemps = Integer.parseInt(array[3]);       //temps en secondes
+                G.createLink(numSommet1, numSommet2, numTemps);  //création du lien
             }
 
         }  //fin de lecture

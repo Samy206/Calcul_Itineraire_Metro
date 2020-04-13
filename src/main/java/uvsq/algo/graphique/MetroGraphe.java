@@ -1,7 +1,8 @@
 package uvsq.algo.graphique;
 
 import uvsq.algo.Graphe;
-import uvsq.algo.Itineraire;
+
+import uvsq.algo.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,26 +17,30 @@ public class MetroGraphe extends JPanel implements MouseListener {
     private String stationDepart ;
     private String stationArrivee ;
     private String itineraire ;
-    JButton button1 = new JButton("Châtelet");
-    JButton button2 = new JButton("Gare de Lyon");
-    JButton button3 = new JButton("Saint-Lazare");
-    JButton button4 = new JButton("Bibliothèque François Mitterand");
+    private JButton button ;
+    Graphe graph ;
 
     public MetroGraphe() {
         //setLayout(new GridLayout(3, 3));
-        setSize(512, 512);
-        setOpaque(false);
-        add(button1);
-        add(button2);
-        add(button3);;
-        add(button4);
-        button1.addMouseListener(this);
-        button2.addMouseListener(this);
-        button3.addMouseListener(this);
-        button4.addMouseListener(this);
+        setSize(800, 800);
+        graph = Itineraire.buildGraph();
+        addButtons();
+        //setOpaque(false);
+
     }
 
-    @Override
+
+    public void addButtons()
+    {
+        String nomPrev ;
+        for(Station s : graph.Sommets)
+        {
+            button = new JButton(s.Nom);
+            add(button);
+            button.addMouseListener(this);
+        }
+    }
+   /* @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -43,7 +48,7 @@ public class MetroGraphe extends JPanel implements MouseListener {
         Point p1 = button1.getLocation();
         p1.x += button1.getWidth() / 2;
         p1.y += button1.getHeight() / 2;
-        Point p2 = button4.getLocation();
+        Point p2 = button4.getLuvsq/algo/Graphe.java:200ocation();
         p2.x += button4.getWidth() / 2;
         p2.y += button4.getHeight() / 2;
         g.drawLine(p1.x, p1.y, p2.x, p2.y);
@@ -56,7 +61,7 @@ public class MetroGraphe extends JPanel implements MouseListener {
         p4.y += button3.getHeight() / 2;
         g.setColor(Color.BLUE);
         g.drawLine(p3.x, p3.y, p4.x, p4.y);
-    }
+    }*/
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {
         JButton myButton = (JButton)mouseEvent.getSource();

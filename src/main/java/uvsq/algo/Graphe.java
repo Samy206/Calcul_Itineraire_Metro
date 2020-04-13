@@ -137,7 +137,6 @@ public class Graphe {
         }
 
         Iti = arrivee;
-        direction = getDirection(Iti,Iti.Line);  // direction qui évoluera au fil du trajet
         while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
         {
             trajet.add(Iti);
@@ -181,23 +180,28 @@ public class Graphe {
         int minutes = (int) (res.duree / 60) ;  //nombre de minutes de la source à la station d'arrivée
         int secondes = (int) (res.duree % 60) ; //nombre de secondes de la source à la station d'arrivée
 
-        direction = getDirection(Iti,Iti.Line);   //obtention de la direction de la première ligne empruntée
+        List<Station> trajetStations = res.itineraire;
+        Station depart = trajetStations.get(trajetStations.size()-1);
+        Station next = trajetStations.get(trajetStations.size()-2);
+        direction = getDirection(depart, next);   //obtention de la direction de la première ligne empruntée
         trajet += "Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction; //affichage du
         //debut du trajet
         nomLignePrev = Iti.Line.Nom ; //enregistrement de la ligne en cas de changement
-        for(int i = res.itineraire.size()-2 ; i >= 0 ; i--)
+        for(int i = trajetStations.size()-2 ; i >= 0 ; i--)
         {
             if(i == 0 )
-                trajet += "\nVous arriverez à la station " + res.itineraire.get(i).Nom;
+                trajet += "\nVous arriverez à la station " + trajetStations.get(i).Nom;
 
-            else if (Station.stringCompareDirection(res.itineraire.get(i).Line.Nom , nomLignePrev) == 0 && i != 0 )
-                trajet += "\nVous passerez par la station "+ res.itineraire.get(i).Nom + " sur la ligne " +nomLignePrev;
+            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 0 && i != 0 )
+                trajet += "\nVous passerez par la station "+ trajetStations.get(i).Nom + " sur la ligne " +nomLignePrev;
 
-            else if (Station.stringCompareDirection(res.itineraire.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
+            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
             {
-                nomLignePrev = res.itineraire.get(i).Line.Nom ;
-                direction =  getDirection(res.itineraire.get(i),res.itineraire.get(i).Line);
-                trajet += "\nA partir de  "+ res.itineraire.get(i).Nom + " vous devrez prendre la ligne "+ res.itineraire.get(i).Line.Nom + " en direction de " + direction;
+                nomLignePrev = trajetStations.get(i).Line.Nom ;
+                depart = trajetStations.get(i);
+                next = trajetStations.get(i-1);
+                direction =  getDirection(depart, next);
+                trajet += "\nA partir de  "+ trajetStations.get(i).Nom + " vous devrez prendre la ligne "+ trajetStations.get(i).Line.Nom + " en direction de " + direction;
             }
 
         }
@@ -206,24 +210,14 @@ public class Graphe {
     }
 
 
-    public String getDirection(Station s1 , Ligne line ) //Méthode qui nous permet d'avoir la direction dans laquelle on va
+    /*public String getDirection(Station s1 , Ligne line ) //Méthode qui nous permet d'avoir la direction dans laquelle on va
     {
         Station s3 ;
         s3 = s1 ;   //station temporaire qui nous permet de nous balader sur la ligne
 
         int check = 98 ;
 
-        if(Station.stringCompareDirection(s1.Nom,line.Terminus1) == 0 ) // si on est déjà à un des deux ou trois terminus on retourne
-                                                                        // un autre dans la direction opposée
-        {
-           if(line.Terminus2.size() == 1)
-            return line.Terminus2.get(0) ;
-        }
-        else if (( line.Terminus2.contains(s3.Nom) ) )  //ici aussi
-        {
-            return line.Terminus1 ;
-        }
-        else {  //si nous ne sommes à aucun des deux ou trois terminus
+           //si nous ne sommes à aucun des deux ou trois terminus
             while ((Station.stringCompareDirection(s3.Nom, line.Terminus1) != 0 || (!(line.Terminus2.contains(s3.Nom))))) {
                 for (Lien l : Links) {
                     check = 98;
@@ -249,33 +243,63 @@ public class Graphe {
                             break;
 
                     }
-                    else if ((l.Arrivee).equals(s3) && (Station.stringCompareDirection(l.Depart.Line.Nom,line.Nom) == 0)) { //ici
-                                                    // on va dans le sens inverse des liens
-                                                    //on ne voit cette possibilité uniquement s'il n'y a pas de liens qui nous
-                                                    //arrange ( sur la même ligne  de métro)
-                                                    //check prend 0 si on trouve un terminus
 
-                        s3 = l.Depart;
-                        if ((Station.stringCompareDirection(s3.Nom, line.Terminus1) == 0)
-                                || (Station.stringCompareDirection(s3.Nom, line.Terminus2.get(0)) == 0)) {
-                            check = 0;
-                        }
-                        if ((line.Terminus2.size() == 2)) {
-                            if (Station.stringCompareDirection(s3.Nom, line.Terminus2.get(1)) == 0)
-                                check = 0;
-                        }
-
-                        if (check == 0)
-                            break;
-                    }
                 }
                 if (check == 0)
                     break;
             }
 
-        }
+
 
         return s3.Nom ;
+    }*/
+
+    public String getDirection( Station depart, Station next )
+    {
+
+        Ligne line = depart.Line ;
+        if(Station.stringCompareDirection(depart.Nom,line.Terminus1) == 0 ) // si on est déjà à un des deux ou trois terminus on retourne
+        // un autre dans la direction opposée
+        {
+            if(line.Terminus2.size() == 1)
+                return line.Terminus2.get(0) ;
+        }
+        else if (( line.Terminus2.contains(depart.Nom) ) )  //ici aussi
+        {
+            return line.Terminus1 ;
+        }
+
+        List<String> stationsTraitees = new ArrayList<>();
+        stationsTraitees.add(depart.Nom);
+        stationsTraitees.add(next.Nom);
+        Boolean isArrivee = false;
+        Boolean isDepart = false;
+        Boolean isTerminus = false;
+        while(! isTerminus){
+            for (Lien link : Links) {
+                if (next.Nom.equals(link.Arrivee.Nom)) {
+                    isArrivee = true;
+                }
+                else if (next.Nom.equals(link.Depart.Nom)) {
+                    isDepart = true;
+                }
+                if (isArrivee && link.Depart.Line == next.Line && ! stationsTraitees.contains(link.Depart.Nom)) {
+                    next = link.Depart;
+                    stationsTraitees.add(next.Nom);
+                }
+                else if (isDepart && link.Arrivee.Line == next.Line && ! stationsTraitees.contains(link.Arrivee.Nom)) {
+                    next = link.Arrivee;
+                    stationsTraitees.add(next.Nom);
+                }
+                isDepart = false;
+                isArrivee = false;
+            }
+            isTerminus = (next.Nom.equals(line.Terminus1) || line.Terminus2.contains(next.Nom));
+        }
+
+
+        return next.Nom;
+
     }
 
     public List<Station> getNumStation(String Name)  //on prend un nom de station et on renvoie le sommet correspondant
