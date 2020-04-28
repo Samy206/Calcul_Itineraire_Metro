@@ -1,11 +1,10 @@
 package uvsq.algo;
-import javax.management.relation.RelationSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.String;
 
 public class Graphe {
-    public List<Station> Sommets;           //Un graphe est composé de sommets et de liens
+    public List<Station> Sommets;           //Un graphe est composé de sommets ( stations ) et de liens ( transitions )
     public List<Lien> Links;
 
     public Graphe() {   //Pour l'initialiser on créer juste les deux listes
@@ -22,7 +21,8 @@ public class Graphe {
             System.out.println("Le sommet : " + S.Nom + " de numéro " + S.Num +  " est déjà présent "); //Sinon on affiche ça
     }
 
-    public int createLink(int numero1, int numero2, int temps) {
+    public int createLink(int numero1, int numero2, int temps) { //on cherche les deux numéros de sommets entrés , et une fois trouvés on créer un lien entre les deux
+                                                                 //dont le poids est la vairable "temps"
         int indiceI = -1;
         int indiceJ = -1;
         int cmp = 0;
@@ -57,9 +57,11 @@ public class Graphe {
 
     }
 
-    public ResultTrajet ItineraireFromProgram(Station depart, Station arrivee ) {
-        //Recherche d'itinéraire sans rien donner en
-        // paramètre à l'éxecution ( Djikstra )
+    public ResultTrajet ItineraireFromProgram(Station depart, Station arrivee ) { //Recherche d'itinéraire ( algorithme de djikstra ) : on part d'une station et tant qu'on trouve des liens
+        // qui ont cette station soit en arrivée soit en départ on inscrit dans l'indice correspondant du tableau distance le poids du lien + la distance actuelle de la station
+        // en question , et ainsi on avance de façon à avoir les chemins dont les durées sont les moins longues pour chaque autre station ( et on change le pere si il faut )
+        // et dès qu'on a fini de traiter un sommet on l'ajoute à une liste où il ne sera pas retraité une deuxième fois , et ainsi on utilise le principe de Djikstra dans cet algortihme
+        //A la fin , avec le tableau pere on retrace l'itinéraire trouvé et on renvoie une classe ResultTrajet qui correspond à une liste de stations et une durée en secondes
 
         int numDep = depart.Num ;                                       //Source : numéro de début du trajet
         double[] distance = new double[Sommets.size()];                 //Tableau des distances des autres stations à la source
@@ -137,7 +139,7 @@ public class Graphe {
         }
 
         Iti = arrivee;
-        while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ
+        while (!((Iti.Nom).equals(stat1)))  // tant qu'on n'est pas à la station de départ , on ajoute les stations à la liste Trajet qui correspond à l'itinéraire qu'on va renvoyer
         {
             trajet.add(Iti);
             Iti = pere[Iti.Num];
@@ -148,34 +150,37 @@ public class Graphe {
 
     }
 
-    public ResultTrajet getItineraireGraphe(String stat1, String stat2) {
+    public ResultTrajet getItineraireGraphe(String stat1, String stat2) { // si une station de départ a plusieurs correspondances on vérifie chaque départ de ligne possible afin
+        // d'obtenir le trajet le plus court
+        //la fonction getNumStation renvoie une liste de station qui portent le même nom mais qui se trouvent sur des lignes différentes et ainsi on les teste toutes
+        //on fait de même avec la station d'arrivée si elle a plusieurs correspondances aussi
 
         List <Station> depart = getNumStation(stat1);
-        List <Station> arrivee = getNumStation(stat2);
+        List <Station> arrivee = getNumStation(stat2); //récupération des deux numéros de sommets à partir  des noms de ces stations
         double min = Double.MAX_VALUE ;
         ResultTrajet tmp ;
 
         List <Station> itineraire = new ArrayList<>();
-        for(int i = 0 ; i < depart.size() ; i++)
+        for(int i = 0 ; i < depart.size() ; i++)  // double boucle sur la station de départ et d'arrivée nous permettant d'avoir la durée optimale
         {
             for(int j = 0 ;  j < arrivee.size() ; j++)
             {
                 tmp = ItineraireFromProgram(depart.get(i),arrivee.get(j));
-                if(min > tmp.duree)
+                if(min > tmp.duree) //si on trouve une durée inférieure on enregistre le trajet et la durée
                 {
                    itineraire = tmp.itineraire;
                    min = tmp.duree ;
                 }
             }
         }
-        return new ResultTrajet (min,itineraire);
+        return new ResultTrajet (min,itineraire); //on renvoie la même structure que pour l'algorithme de djikstra pour que l'itinéraire et la durée soient affichés
     }
 
-    public String itineraireToString(ResultTrajet res)
+    public String itineraireToString(ResultTrajet res) //affichage de l'itinéraire qui prend en paramètre la classe qu'on vient d'évoquer
     {
         String direction ;
         String trajet ="";
-        Station Iti = res.itineraire.get(res.itineraire.size()-1);
+        Station Iti = res.itineraire.get(res.itineraire.size()-1); // première station empruntée
         String nomLignePrev ;
         int minutes = (int) (res.duree / 60) ;  //nombre de minutes de la source à la station d'arrivée
         int secondes = (int) (res.duree % 60) ; //nombre de secondes de la source à la station d'arrivée
@@ -187,15 +192,17 @@ public class Graphe {
         trajet += "Vous êtes à "+ Iti.Nom + " , prenez la ligne "+ Iti.Line.Nom + " en direction de "+ direction; //affichage du
         //debut du trajet
         nomLignePrev = Iti.Line.Nom ; //enregistrement de la ligne en cas de changement
-        for(int i = trajetStations.size()-2 ; i >= 0 ; i--)
+        for(int i = trajetStations.size()-2 ; i >= 0 ; i--) //on navigue dans le trajet pour concaténer le nom des stations à la chaine de caractère nommée trajet
         {
             if(i == 0 )
                 trajet += "\nVous arriverez à la station " + trajetStations.get(i).Nom;
 
-            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 0 && i != 0 )
+            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 0 && i != 0 ) // si on est sur la même ligne on se contente de concaténer la station
+                                                                                                                    // actuelle
                 trajet += "\nVous passerez par la station "+ trajetStations.get(i).Nom + " sur la ligne " +nomLignePrev;
 
-            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 1 && i != 0)
+            else if (Station.stringCompareDirection(trajetStations.get(i).Line.Nom , nomLignePrev) == 1 && i != 0) //sinon on recherche la direction de la nouvelle ligne empruntée
+                // puis on concaténe
             {
                 nomLignePrev = trajetStations.get(i).Line.Nom ;
                 depart = trajetStations.get(i);
@@ -206,57 +213,15 @@ public class Graphe {
 
         }
         trajet += "\nCe trajet devrait durer "+ minutes + " minutes et " + secondes + " secondes";
-        return trajet ;
+        return trajet ; //on renvoie la chaîne de caractère contenant maintenant l'ensemble des informations du trajet
     }
 
-
-    /*public String getDirection(Station s1 , Ligne line ) //Méthode qui nous permet d'avoir la direction dans laquelle on va
+    public String getDirection( Station depart, Station next )//cette fonction nous permet d'avoir grâce à deux stations la direction qu'on prend tant qu'on est sur une ligne
     {
-        Station s3 ;
-        s3 = s1 ;   //station temporaire qui nous permet de nous balader sur la ligne
-
-        int check = 98 ;
-
-           //si nous ne sommes à aucun des deux ou trois terminus
-            while ((Station.stringCompareDirection(s3.Nom, line.Terminus1) != 0 || (!(line.Terminus2.contains(s3.Nom))))) {
-                for (Lien l : Links) {
-                    check = 98;
-
-                    //On "navigue" sur la même ligne jusqu'à trouver un des terminus
-
-                    if ((l.Depart).equals(s3) && (Station.stringCompareDirection(l.Arrivee.Line.Nom,line.Nom) == 0)) { //Encore une fois
-                                                    //soit on va dans la direction des liens , soit dans leur sens inverses
-                                                    //( les lignes de métro permettent ça) , ( ici c'est dans leur sens)
-                        s3 = l.Arrivee;
-                        if ((Station.stringCompareDirection(s3.Nom, line.Terminus1) == 0)
-                                || (Station.stringCompareDirection(s3.Nom, line.Terminus2.get(0)) == 0)) { //Ces vérifications
-                                                    // peuvent mettre la variable check à 0 , et si c'est le cas c'est
-                                                    // qu'on a trouvé un des terminus , du coup on sort des boucles et on renvoie la direction
-                            check = 0;
-                        }
-                        if ((line.Terminus2.size() == 2)) {
-                            if (Station.stringCompareDirection(s3.Nom, line.Terminus2.get(1)) == 0)
-                                check = 0;
-                        }
-
-                        if (check == 0)
-                            break;
-
-                    }
-
-                }
-                if (check == 0)
-                    break;
-            }
-
-
-
-        return s3.Nom ;
-    }*/
-
-    public String getDirection( Station depart, Station next )
-    {
-
+        //si on est à un des terminus on renvoie un terminus dans le sens opposé
+        //sinon tant qu'on a pas trouvé un des terminus on avance dans la ligne grâce à un parcours des liens existants sur cette ligne là de façon à arriver à un moment à un des terminus
+        // la seule subtilité ici est de vérifier les liens dans les deux sens ( arrivée et depart ) , et le fait d'avoir deux stations en paramètre nous permet de ne pas nous tromper
+        // de sens dès le début
         Ligne line = depart.Line ;
         if(Station.stringCompareDirection(depart.Nom,line.Terminus1) == 0 ) // si on est déjà à un des deux ou trois terminus on retourne
         // un autre dans la direction opposée
@@ -269,13 +234,14 @@ public class Graphe {
             return line.Terminus1 ;
         }
 
-        List<String> stationsTraitees = new ArrayList<>();
+        List<String> stationsTraitees = new ArrayList<>(); //sinon on initialise aussi une liste de stations qui dès qu'elle seront traitées ne pourront plus servir de point de départ
+                                                            // sur la ligne
         stationsTraitees.add(depart.Nom);
         stationsTraitees.add(next.Nom);
         Boolean isArrivee = false;
         Boolean isDepart = false;
         Boolean isTerminus = false;
-        while(! isTerminus){
+        while(! isTerminus){ //tant qu'on a pas trouvé de terminus
             for (Lien link : Links) {
                 if (next.Nom.equals(link.Arrivee.Nom)) {
                     isArrivee = true;
@@ -283,35 +249,42 @@ public class Graphe {
                 else if (next.Nom.equals(link.Depart.Nom)) {
                     isDepart = true;
                 }
-                if (isArrivee && link.Depart.Line == next.Line && ! stationsTraitees.contains(link.Depart.Nom)) {
+                if (isArrivee && link.Depart.Line == next.Line && ! stationsTraitees.contains(link.Depart.Nom)) { //si on doit aller dans le sens "depart"
+                                                        //next devient le départ de la prochaine itération
                     next = link.Depart;
                     stationsTraitees.add(next.Nom);
                 }
-                else if (isDepart && link.Arrivee.Line == next.Line && ! stationsTraitees.contains(link.Arrivee.Nom)) {
+                else if (isDepart && link.Arrivee.Line == next.Line && ! stationsTraitees.contains(link.Arrivee.Nom)) { //sinon c'est l'arrivée
                     next = link.Arrivee;
                     stationsTraitees.add(next.Nom);
-                }
+                } // et qu'il y a encore des stations qui nous sépare du terminus qu'on cherche on continue
                 isDepart = false;
                 isArrivee = false;
             }
-            isTerminus = (next.Nom.equals(line.Terminus1) || line.Terminus2.contains(next.Nom));
+            isTerminus = (next.Nom.equals(line.Terminus1) || line.Terminus2.contains(next.Nom)); // le bouleen qui vérifie bien qu'on est pas à un des terminus est changé ici
         }
 
-
-        return next.Nom;
+        return next.Nom; //on renvoie le nom du terminus en question
 
     }
 
-    public List<Station> getNumStation(String Name)  //on prend un nom de station et on renvoie le sommet correspondant
+    public List<Station> getNumStation(String Name)  //on prend un nom de station et on renvoie les sommets correspondants sur plusieurs lignes
     {
         List <Station> possibilite = new ArrayList<Station>();
+
         for(Station s : Sommets){
             if(Station.stringCompareStation(Name,s.Nom) == 0 )
             {
-                possibilite.add(s);
+                possibilite.add(s); // si un des sommets correspond au nom entré en paramètre on ajoute ce sommet à la liste de stations
             }
         }
-        return possibilite;
+        if(possibilite.size() != 0 ) // s'il y en a au moins un on renvoie la liste
+            return possibilite;
+
+        else
+            System.out.println("Nom invalide de station");
+            System.exit(-1);
+            return null ; //sinon on renvoie null
     }
 
 }

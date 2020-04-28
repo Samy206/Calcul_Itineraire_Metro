@@ -1,9 +1,5 @@
 package uvsq.algo;
 
-
-import uvsq.algo.graphique.MetroGraphe;
-
-import javax.swing.*;
 import java.io.*;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -12,20 +8,11 @@ import java.lang.String;
 
 
 public class Itineraire {
-    public static void main(String[] args) {
+    public static void main(String[] args) {//ce main là n'a pas d'interface graphique , en effet pour exécuter le programme on donne juste à l'exécution ce que nous demandes les Scanner
+                                            // ici , et on enregistre les stations de départ et d'arrivée . Puis dans un second temps , on lit fichier "metro.txt" pour construire le
+                                            // graphe et les lignes , pour finir on calcule l'itinéraire et on l'affche
 
-        System.out.print("Voulez-vous afficher toutes les stations ? [y/n] ");
-        String aff;
         String itineraire ;
-        Scanner lec = new Scanner(System.in);
-        System.out.println("");
-        aff = lec.nextLine();
-        int Affichage;
-        if (Station.stringCompareDirection(aff, "y") == 0)        //Changement de la valeur affichage des stations entre celle de
-            // départ et d'arrivée selon la volonté de l'utilisateur
-            Affichage = 1;
-        else
-            Affichage = 0;
         String stationDepart;
         String stationArrivee;
         System.out.print("A quelle station êtes-vous : ");
@@ -33,24 +20,21 @@ public class Itineraire {
         Scanner scanf = new Scanner(System.in);
         stationDepart = scanf.nextLine();         //Lecture de station de départ
         System.out.print("A quelle station voulez-vous arriver : ");
-        scanf = new Scanner(System.in);             //lecture de station d'arrivée
+        scanf = new Scanner(System.in);
         System.out.println("");  //Les deux premiers objets Scanner nous permettent de récupérer les stations de départ et d'arrivée
-        stationArrivee = scanf.nextLine();     //Lecture de station de départ
+        stationArrivee = scanf.nextLine();     //Lecture de station d'arrivee
 
-        Graphe G = buildGraph() ;
-        ResultTrajet res = G.getItineraireGraphe(stationDepart,stationArrivee);
-        itineraire =  G.itineraireToString(res); //calcul de l'itinéraire
-        System.out.println(itineraire);
+        System.out.println(getItineraire(stationDepart,stationArrivee)); //construction du graphe , calcule de l'itinéraire ,et affichage du trajet
     }
 
-    public static String getItineraire(String stationdepart , String stationarrivee , int affichage)
+    public static String getItineraire(String stationdepart , String stationarrivee) // dans cette fonction on construit le graphe , on cherhce l'itinéraire et on renvoie
     {
-        Graphe G = buildGraph();
-        ResultTrajet res = G.getItineraireGraphe(stationdepart,stationarrivee);
-        return G.itineraireToString(res); //calcul de l'itinéraire
+        Graphe G = buildGraph(); //construction du graphe
+        ResultTrajet res = G.getItineraireGraphe(stationdepart,stationarrivee); //on calcule l'itinéraire
+        return G.itineraireToString(res); //renvoie de la chaine de caractère contenant les infos du trajet
     }
 
-    public static Graphe buildGraph()
+    public static Graphe buildGraph() //lecture du fichier et construction du graphe , comportement selon la ligne lue détaillé plus bas
     {
         InputStream file = Itineraire.class.getClassLoader().getResourceAsStream("metro.txt"); //le fichier est stocké dans
         // "resources"
@@ -115,6 +99,6 @@ public class Itineraire {
 
         }  //fin de lecture
 
-        return G ;
+        return G ; //renvoie du graphe construit
     }
 }

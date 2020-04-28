@@ -10,7 +10,7 @@ public class Ligne
     public String Terminus1 ;           //Un terminus de base ( choisis au hasard)
     public List<String> Terminus2 ;     //Un ou deux autres terminus ( terminus restants)
 
-    public Ligne(String nom )           //De base on l'initialise avec un nom , on ajoutera les stations au fur et à mesure
+    public Ligne(String nom )           //De base on l'initialise avec un nom , on ajoutera les stations au fur et à mesure , et les terminus sont initialisés avec la fonction suivante
     {
         Nom = nom ;
         Stations = new ArrayList <Station> () ;
@@ -34,28 +34,28 @@ public class Ligne
     }
 
     @Override
-    public String toString()
+    public String toString() //la fonction toString affiche toutes les stations contenues dans la ligne
     {
         String ListeStations , ListeTerminus ;
         ListeStations = "";
         ListeTerminus = "";
 
-        for(Station s : Stations)                                   //Concaténation de tout les noms de stations
+        for(Station s : Stations)
         {
             ListeStations = ListeStations + s.Nom ;
             ListeStations = ListeStations + " , " ;
         }
 
-        ListeTerminus = ListeTerminus + Terminus1 ;
+        ListeTerminus = ListeTerminus + Terminus1 ;             //Concaténation des terminus avec le reste des stations
 
-        for(String t : Terminus2 )                                     //Concaténation des terminus
+        for(String t : Terminus2 )
         {
             ListeStations = ListeStations + t ;
             ListeStations = ListeStations + " , " ;
         }
 
         return ("La ligne de nom " + Nom + " a pour terminus " + ListeTerminus + " et dessert les stations " + ListeStations + "");
-        //On l'affiche
+        //On renvoie le résultat
     }
 
 }
